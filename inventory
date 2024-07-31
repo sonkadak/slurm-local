@@ -1,0 +1,5 @@
+[controller]
+slurm-test-ubuntu ansible_host=slurm-test-ubuntu ansible_user=root
+
+[compute]
+slurm-test-rocky ansible_host=slurm-test-rocky ansible_user=root
