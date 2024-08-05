@@ -1,0 +1,9 @@
+---
+- name: Install Munge
+  apt:
+    name:
+      - munge
+      - libmunge-dev
+      - libmunge2
+    state: present
+    update_cache: yes
