@@ -1,0 +1,13 @@
+---
+- name: Prerequisites
+  hosts: all
+  become: true
+  roles:
+    - common
+    - munge
+
+- name: Install HWLOC
+  hosts: all
+  become: true
+  roles:
+    - hwloc
