@@ -1,0 +1,7 @@
+---
+hwloc_version_major: "2"
+hwloc_version_minor: "5"
+hwloc_version_patch: "0"
+hwloc_version: "{{ hwloc_version_major }}.{{ hwloc_version_minor }}.{{ hwloc_version_patch}}"
+hwloc_build_dir: "/opt/build/hwloc"
+hwloc_install_dir: "/opt/hwloc"
