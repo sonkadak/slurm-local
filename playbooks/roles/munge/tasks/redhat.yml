@@ -1,8 +1,0 @@
----
-- name: Install Munge
-  yum:
-    name:
-      - munge
-      - munge-libs
-      - munge-devel
-    state: present
