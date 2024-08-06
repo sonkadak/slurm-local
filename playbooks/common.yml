@@ -1,6 +1,0 @@
----
-- name: Prerequisites
-  hosts: all
-  become: true
-  roles:
-    - common
