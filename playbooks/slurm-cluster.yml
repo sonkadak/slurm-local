@@ -6,8 +6,9 @@
     - common
     - munge
 
-- name: Install HWLOC
+- name: Install Slurm with components
   hosts: all
   become: true
   roles:
     - hwloc
+    - pmix

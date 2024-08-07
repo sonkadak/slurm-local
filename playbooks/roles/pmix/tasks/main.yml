@@ -1,0 +1,8 @@
+---
+- name: Check if pmix is already installed
+  stat:
+    path: "{{ pmix_install_dir }}/bin/pmix_info"
+  register: pmix_installed
+
+- include_tasks: install.yml
+  when: not pmix_installed.stat.exists
