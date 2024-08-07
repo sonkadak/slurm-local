@@ -1,47 +1,8 @@
 ---
-- name: Ensure build directory exists
-  file:
-    path: "{{ hwloc_build_dir }}"
-    state: directory
-
-- name: Download hwloc source
-  get_url:
-    url: "https://download.open-mpi.org/release/hwloc/v{{ hwloc_version_major }}.{{ hwloc_version_minor }}/hwloc-{{ hwloc_version }}.tar.gz"
-    dest: "{{ hwloc_build_dir }}/hwloc-{{ hwloc_version }}.tar.gz"
-
-- name: Extract hwloc source
-  unarchive:
-    src: "{{ hwloc_build_dir }}/hwloc-{{ hwloc_version }}.tar.gz"
-    dest: "{{ hwloc_build_dir }}"
-    remote_src: yes
-    extra_opts: [--strip-components=1]
-
-- name: Check if previous build exists
+- name: Check if hwloc is already installed
   stat:
-    path: "{{ hwloc_build_dir }}/Makefile"
-  register: hwloc_build_dir_check
+    path: "{{ hwloc_install_dir }}/bin/hwloc-info"
+  register: hwloc_installed
 
-- name: Clean previous builds
-  command: make distclean
-  args:
-    chdir: "{{ hwloc_build_dir }}"
-  when: hwloc_build_dir_check.stat.exists
-
-- name: Configure hwloc
-  command: ./configure --prefix={{ hwloc_install_dir }} --enable-static --disable-cairo --disable-libxml2 --enable-netloc --enable-plugins
-  args:
-    chdir: "{{ hwloc_build_dir }}"
-
-- name: Build hwloc
-  community.general.make:
-    chdir: "{{ hwloc_build_dir }}"
-    jobs: "{{ ansible_processor_cores * ansible_processor_vcpus }}"
-    targets:
-      - all
-
-- name: Install hwloc
-  community.general.make:
-    chdir: "{{ hwloc_build_dir }}"
-    jobs: "{{ ansible_processor_cores * ansible_processor_vcpus }}"
-    targets:
-      - install
+- include_tasks: install.yml
+  when: not hwloc_installed.stat.exists
