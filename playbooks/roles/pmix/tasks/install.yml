@@ -1,0 +1,93 @@
+---
+- name: Install dependencies for PMIx on RedHat
+  package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - libev-devel
+    - libevent-devel
+    - zlib
+    - zlib-devel
+    - pandoc
+  when: ansible_os_family == "RedHat"
+
+- name: Install dependencies for PMIx on Debian
+  package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - libev-dev
+    - libevent-dev
+    - zlib1g
+    - zlib1g-dev
+    - pandoc
+  when: ansible_os_family == "Debian"
+
+- name: Remove conflicting PMIx packages on RedHat
+  package:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - pmix-devel
+    - pmix-libs
+    - pmix
+  when: ansible_os_family == "RedHat"
+
+- name: Remove conflicting PMIx packages on Debian
+  package:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - libpmix-dev
+    - libpmix2
+    - pmix
+  when: ansible_os_family == "Debian"
+
+- name: Create build directory for PMIx
+  file:
+    path: "{{ pmix_build_dir }}"
+    state: directory
+
+- name: Download PMIx source
+  get_url:
+    url: "https://github.com/openpmix/openpmix/releases/download/v{{ pmix_version }}/pmix-{{ pmix_version }}.tar.bz2"
+    dest: "{{ pmix_build_dir }}/pmix-{{ pmix_version }}.tar.bz2"
+
+- name: Extract PMIx source
+  unarchive:
+    src: "{{ pmix_build_dir }}/pmix-{{ pmix_version }}.tar.bz2"
+    dest: "{{ pmix_build_dir }}"
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+
+- name: Check if previous PMIx build exists
+  stat:
+    path: "{{ pmix_build_dir }}/Makefile"
+  register: pmix_build_dir_check
+
+- name: Clean previous PMIx builds
+  command: make distclean
+  args:
+    chdir: "{{ pmix_build_dir }}"
+  when: pmix_build_dir_check.stat.exists
+
+- name: Create install directory for PMIx
+  file:
+    path: "{{ pmix_install_dir }}"
+    state: directory
+
+- name: Configure PMIx
+  command: ./configure --prefix={{ pmix_install_dir }} --with-hwloc={{ hwloc_install_dir }}
+  args:
+    chdir: "{{ pmix_build_dir }}"
+
+- name: Build PMIx
+  community.general.make:
+    chdir: "{{ pmix_build_dir }}"
+    jobs: "{{ ansible_processor_vcpus }}"
+
+- name: Install PMIx
+  community.general.make:
+    target: install
+    chdir: "{{ pmix_build_dir }}"
+    jobs: "{{ ansible_processor_vcpus }}"

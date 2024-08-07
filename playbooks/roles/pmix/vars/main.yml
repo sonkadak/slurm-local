@@ -1,0 +1,4 @@
+---
+pmix_build_dir: "/opt/build/pmix"
+pmix_install_dir: "/opt/pmix"
+pmix_version: "3.2.3"
