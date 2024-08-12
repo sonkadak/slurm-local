@@ -1,4 +1,8 @@
 ---
+- name: Set pmix install directory fact
+  set_fact:
+    pmix_install_dir: "{{ pmix_install_dir }}"
+
 - name: Install dependencies for PMIx on RedHat
   package:
     name: "{{ item }}"

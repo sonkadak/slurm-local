@@ -1,0 +1,30 @@
+---
+- name: build
+  shell: "make -j$(nproc) > build.log 2>&1"
+  args:
+    chdir: "{{ slurm_build_dir }}"
+
+- name: build contrib
+  shell: "make -j$(nproc) contrib >> build.log 2>&1"
+  args:
+    chdir: "{{ slurm_build_dir }}"
+
+- name: install
+  shell: "make -j$(nproc) install >> build.log 2>&1"
+  args:
+    chdir: "{{ slurm_build_dir }}"
+
+- name: install contrib
+  shell: "make -j$(nproc) install-contrib >> build.log 2>&1"
+  args:
+    chdir: "{{ slurm_build_dir }}"
+
+- name: build pam_slurm_adopt
+  shell: "make -j$(nproc) >> ../../build.log 2>&1"
+  args:
+    chdir: "{{ slurm_build_dir }}/contribs/pam_slurm_adopt"
+
+- name: install pam_slurm_adopt
+  shell: "make -j$(nproc) install >> ../../build.log 2>&1"
+  args:
+    chdir: "{{ slurm_build_dir }}/contribs/pam_slurm_adopt"

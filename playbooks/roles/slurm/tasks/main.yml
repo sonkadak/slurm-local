@@ -1,0 +1,28 @@
+---
+- name: Install Slurm dependencies
+  include_tasks: install_dependencies.yml
+
+- name: Create build directory for Slurm
+  ansible.builtin.file:
+    path: "{{ slurm_build_dir }}"
+    state: directory
+
+- name: Download Slurm source
+  ansible.builtin.get_url:
+    url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
+    dest: "{{ slurm_build_dir }}/slurm-{{ slurm_version }}.tar.bz2"
+
+- name: Extract Slurm source
+  ansible.builtin.unarchive:
+    src: "{{ slurm_build_dir }}/slurm-{{ slurm_version }}.tar.bz2"
+    dest: "{{ slurm_build_dir }}"
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+
+- name: Install Slurm on Controller Node
+  include_tasks: config_controller.yml
+  when: inventory_hostname in groups['controller']
+
+- name: Install Slurm on GPU Node
+  include_tasks: config_gpu_node.yml
+  when: inventory_hostname in groups['compute']
