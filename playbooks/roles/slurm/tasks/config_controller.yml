@@ -1,0 +1,26 @@
+---
+- name: Include OS-specific variables for pam libs
+  include_vars: "{{ ansible_os_family | lower }}.yml"
+  tags: always
+
+- name: Configure Slurm on Controller
+  ansible.builtin.command: >
+    ./configure --prefix={{ slurm_install_dir }}
+                --disable-dependency-tracking
+                --disable-debug
+                --disable-x11
+                --enable-really-no-cray
+                --enable-salloc-kill-cmd
+                --with-hdf5=no
+                --sysconfdir=/etc/slurm
+                --enable-pam
+                --with-pam_dir={{ slurm_pam_lib_dir }}
+                --with-shared-libslurm
+                --without-rpath
+                --with-pmix={{ pmix_install_dir }}
+                --with-hwloc={{ hwloc_install_dir }}
+  args:
+    chdir: "{{ slurm_build_dir }}"
+
+- name: Build and Install Slurm
+  include_tasks: build_and_install.yml

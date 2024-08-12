@@ -1,0 +1,2 @@
+---
+slurm_pam_lib_dir: /lib/x86_64-linux-gnu/security

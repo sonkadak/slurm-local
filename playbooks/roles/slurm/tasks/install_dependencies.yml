@@ -1,0 +1,39 @@
+---
+- name: Ensure dependencies are installed (RedHat)
+  ansible.builtin.yum:
+    name:
+      - munge-devel
+      - readline-devel
+      - mariadb-devel
+      - numactl-devel
+      - pam-devel
+      - http-parser-devel
+      - json-c-devel
+      - perl-ExtUtils-MakeMaker
+      - libatomic
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Ensure dependencies are installed (Debian)
+  ansible.builtin.apt:
+    name:
+      - libmunge-dev
+      - libmariadb-dev
+      - libmariadbclient-dev-compat
+      - libpam0g-dev
+      - libdbus-1-dev
+      - ruby-dev
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Remove existing Slurm packages (RedHat)
+  ansible.builtin.yum:
+    name: slurm
+    state: absent
+  when: ansible_os_family == "RedHat"
+
+- name: Remove existing Slurm packages (Debian)
+  ansible.builtin.apt:
+    name: slurm-wlm
+    state: absent
+  when: ansible_os_family == "Debian"
