@@ -1,0 +1,118 @@
+---
+- name: Install necessary packages for Slurm controller
+  package:
+    name:
+      - mariadb-server
+      - python3-PyMySQL
+      - mailx
+      - policycoreutils-python-utils
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Install necessary packages for Slurm controller on Debian
+  apt:
+    name:
+      - mariadb-server
+      - python3-pymysql
+      - mailutils
+      - policykit-1
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Start MariaDB service
+  systemd:
+    name: mariadb
+    state: started
+    enabled: yes
+
+- name: Create Slurm database user and grant privileges
+  mysql_user:
+    name: "{{ slurm_db_user }}"
+    password: "{{ slurm_db_pw }}"
+    priv: '{{ slurm_db_name }}.*:ALL'
+    login_user: root
+    host: localhost
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    state: present
+
+- name: Flush privileges
+  mysql_db:
+    name: slurm_acct_db
+    state: present
+    login_user: root
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Create necessary directories for Slurm
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ slurm_user }}"
+    group: "{{ slurm_user_group }}"
+  loop:
+    - "{{ slurm_config_dir }}"
+    - /var/spool/slurm/ctld
+    - /var/log/slurm
+
+- name: Apply slurm.conf template
+  template:
+    src: slurm.conf.j2
+    dest: /etc/slurm/slurm.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Apply slurmdbd.conf template
+  template:
+    src: slurmdbd.conf.j2
+    dest: /etc/slurm/slurmdbd.conf
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Copy Slurm service files
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/systemd/system/"
+    owner: root
+    group: root
+    remote_src: yes
+  with_items:
+    - /opt/build/slurm/etc/slurmctld.service
+    - /opt/build/slurm/etc/slurmdbd.service
+
+- name: Start Slurm services
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - slurmdbd.service
+    - slurmctld.service
+
+- name: create cluster
+  command: sacctmgr -i add cluster {{ slurm_cluster_name }}
+  register: create_cluster_result
+  failed_when: "create_cluster_result.rc != 0 and 'already exists' not in create_cluster_result.stdout"
+  changed_when: "'already exists' not in create_cluster_result.stdout"
+  environment:
+    PATH: '{{ slurm_install_dir }}/bin:{{ ansible_env.PATH }}'
+  run_once: true
+
+- name: create account
+  command: sacctmgr -i add account compute-account Description="Compute Accounts" Organization="Prestige"
+  register: create_account_result
+  failed_when: "create_account_result.rc != 0 and 'Nothing new added' not in create_account_result.stdout"
+  changed_when: "'Nothing new added' not in create_account_result.stdout"
+  environment:
+    PATH: '{{ slurm_install_dir }}/bin:{{ ansible_env.PATH }}'
+
+- name: create users
+  command: sacctmgr -i create user {{ item }} account=compute-account adminlevel=None
+  register: create_user_result
+  failed_when: "create_user_result.rc != 0 and 'Nothing new added' not in create_user_result.stdout"
+  changed_when: "'Nothing new added' not in create_user_result.stdout"
+  with_items:
+    - "{{ slurm_account_user }}"
+  environment:
+    PATH: '{{ slurm_install_dir }}/bin:{{ ansible_env.PATH }}'

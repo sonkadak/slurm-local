@@ -26,3 +26,31 @@
 - name: Install Slurm on GPU Node
   include_tasks: config_gpu_node.yml
   when: inventory_hostname in groups['compute']
+
+- name: Gather Node info from GPU Node
+  include_tasks: gather_node_info.yml
+  when: inventory_hostname in groups['compute']
+
+- name: Ensure slurm user and group exist if slurm_user is not root
+  when: slurm_user != "root"
+  block:
+    - name: Create slurm group
+      group:
+        name: "{{ slurm_user }}"
+        state: present
+
+    - name: Create slurm user
+      user:
+        name: "{{ slurm_user }}"
+        group: "{{ slurm_user }}"
+        createhome: yes
+        shell: /bin/bash
+        state: present
+
+- name: Register slurm_controller_hostname
+  set_fact:
+    slurm_controller_hostname: "{{ groups['controller'][0] }}"
+
+- name: Set up Slurm Controller Node
+  include_tasks: setup_controller.yml
+  when: inventory_hostname in groups['controller']
