@@ -1,0 +1,24 @@
+---
+- name: Gather GPU count from nvidia-smi
+  shell: "nvidia-smi -L | wc -l"
+  register: gpu_count
+
+- name: Gather node configuration from slurmd -C
+  command: /usr/local/sbin/slurmd -C
+  register: node_info
+
+- name: Parse node information
+  set_fact:
+    slurm_node:
+      name: "{{ inventory_hostname }}"
+      gpu_count: "{{ gpu_count.stdout }}"
+      cpus: "{{ node_info.stdout | regex_search('CPUs=\\d+') | regex_replace('CPUs=', '') }}"
+      boards: "{{ node_info.stdout | regex_search('Boards=\\d+') | regex_replace('Boards=', '') }}"
+      sockets_per_board: "{{ node_info.stdout | regex_search('SocketsPerBoard=\\d+') | regex_replace('SocketsPerBoard=', '') }}"
+      cores_per_socket: "{{ node_info.stdout | regex_search('CoresPerSocket=\\d+') | regex_replace('CoresPerSocket=', '') }}"
+      threads_per_core: "{{ node_info.stdout | regex_search('ThreadsPerCore=\\d+') | regex_replace('ThreadsPerCore=', '') }}"
+      real_memory: "{{ node_info.stdout | regex_search('RealMemory=\\d+') | regex_replace('RealMemory=', '') }}"
+
+- name: Add node information to slurm_nodes
+  set_fact:
+    slurm_nodes: "{{ slurm_nodes | default([]) + [slurm_node] }}"

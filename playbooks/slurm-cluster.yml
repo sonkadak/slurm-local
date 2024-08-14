@@ -5,6 +5,7 @@
   roles:
     - common
     - munge
+    - facts
 
 - name: Install Slurm with components
   hosts: all
@@ -12,3 +13,4 @@
   roles:
     - hwloc
     - pmix
+    - slurm

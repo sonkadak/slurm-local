@@ -2,3 +2,21 @@
 slurm_version: "23.02.4"
 slurm_build_dir: "/opt/build/slurm"
 slurm_install_dir: "/usr/local"
+slurm_config_dir: "/etc/slurm"
+
+slurm_db_user: "slurm"
+slurm_db_pw: "slurmtest"
+
+# for slurm.conf
+slurm_cluster_name: "slurm"
+slurm_user: "root"
+slurm_user_group: "root"
+slurm_partition_name: "gpu"
+slurm_account_user: "slurm"
+
+# for slurmdbd.conf
+slurmdbd_host_addr: "localhost"
+slurmdbd_host: "localhost"
+slurm_db_user: "slurm"
+slurm_db_pw: "slurmtest"
+slurm_db_name: "slurm_acct_db"
