@@ -72,14 +72,14 @@
 
 - name: Copy Slurm service files
   copy:
-    src: "{{ item }}"
-    dest: "/etc/systemd/system/"
+    src: "{{ slurm_build_dir }}/etc/{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
     owner: root
     group: root
     remote_src: yes
   with_items:
-    - /opt/build/slurm/etc/slurmctld.service
-    - /opt/build/slurm/etc/slurmdbd.service
+    - slurmctld.service
+    - slurmdbd.service
 
 - name: Start Slurm services
   systemd:

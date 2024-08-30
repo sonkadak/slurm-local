@@ -54,3 +54,9 @@
 - name: Set up Slurm Controller Node
   include_tasks: setup_controller.yml
   when: inventory_hostname in groups['controller']
+
+- name: Set up Slurm Compute Node
+  include_tasks: setup_compute.yml
+  vars:
+    is_compute: yes
+  when: inventory_hostname in groups['compute']

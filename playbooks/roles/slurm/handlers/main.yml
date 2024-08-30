@@ -1,2 +1,6 @@
 ---
-# handlers file for slurm
+- name: restart slurmd
+  service:
+    name: slurmd
+    state: restarted
+  when: inventory_hostname in groups['compute']
