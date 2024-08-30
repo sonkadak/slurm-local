@@ -1,0 +1,28 @@
+---
+- hosts: compute
+  become: true
+  tasks:
+    - name: Ubuntu | remove ppa
+      apt_repository:
+        repo: ppa:graphics-drivers/ppa
+        state: absent
+    
+    - name: Ubuntu | ensure old key is absent
+      apt_key:
+        id: "7fa2af80"
+        state: "absent"
+    
+    - name: Ubuntu | install CUDA keyring
+      apt:
+        deb: "https://developer.download.nvidia.com/compute/cuda/repos/{{ ansible_distribution | lower }}{{ ansible_distribution_version | replace('.', '') }}/{{ ansible_architecture }}/cuda-keyring_1.1-1_all.deb"
+        state: "present"
+    
+    - name: Ubuntu | force apt update
+      apt:
+        update_cache: true
+      changed_when: false
+    
+    - name: Ubuntu | install cuda
+      package:
+        name: "cuda-toolkit"
+        state: present
