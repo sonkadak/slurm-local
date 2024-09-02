@@ -15,3 +15,15 @@
     - pmix
     - slurm
     - openmpi
+
+- name: Install enroot
+  hosts: compute
+  become: true
+  roles:
+    - nvidia.enroot
+
+- name: Install pyxis
+  hosts: all
+  become: true
+  roles:
+    - pyxis
