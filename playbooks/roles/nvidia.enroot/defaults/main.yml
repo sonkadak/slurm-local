@@ -1,0 +1,55 @@
+---
+# Optional: Variables needed for interacting with an HTTP proxy
+# (Values are an example)
+#
+# http_proxy: http://10.0.2.5:3128
+# https_proxy: http://10.0.2.5:3128
+# no_proxy: localhost,cluster.local,127.0.0.1,::1,10.0.2.10,10.0.2.20,10.0.2.30
+# proxy_env:
+      # http_proxy: '{{ http_proxy }}'
+      # https_proxy: '{{ https_proxy }}'
+      # no_proxy: '{{ no_proxy }}'
+
+# Names of packages to install
+enroot_packages:
+  - enroot
+  - 'enroot+caps'
+enroot_package_state: present
+enroot_version: "3.2.0"
+enroot_release: "1"
+enroot_version_string: "{{ enroot_version }}-{{ enroot_release }}"
+
+# Install option 1 (default): provide direct URLs to debs or rpms
+enroot_deb_packages:
+  - 'https://github.com/NVIDIA/enroot/releases/download/v{{ enroot_version }}/enroot_{{ enroot_version_string }}_amd64.deb'
+  - 'https://github.com/NVIDIA/enroot/releases/download/v{{ enroot_version }}/enroot+caps_{{ enroot_version_string }}_amd64.deb'
+enroot_rpm_packages:
+  - 'https://github.com/NVIDIA/enroot/releases/download/v{{ enroot_version }}/enroot-{{ enroot_version_string }}.el7.x86_64.rpm'
+  - 'https://github.com/NVIDIA/enroot/releases/download/v{{ enroot_version }}/enroot+caps-{{ enroot_version_string }}.el7.x86_64.rpm'
+
+epel_package: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+
+# Install option 2: provide repo, key, and list of packages
+# No default repositories exist, so this will need to refer to repos you set up
+#
+#enroot_ubuntu_repo_key_url: ''
+#enroot_ubuntu_repo_key_id: ''
+#enroot_ubuntu_repo: ''
+#enroot_rhel_repo_gpgkey: ''
+#enroot_rhel_repo: ''
+
+
+# a block of lines to add to enroot.conf
+enroot_config: ''
+
+# lists of { filename: '', content: '' }
+enroot_environ_config_files: []  # filenames should end with .env
+enroot_hook_config_files: []     # filenames should end with .sh
+enroot_mount_config_files: []    # filenames should end with .fstab
+
+# Should we configure kernel on RedHat systems and reboot?
+enroot_configure_kernel_options: true
+enroot_configure_kernel_options_versions: "ALL"
+enroot_reboot_timeout: 900
+enroot_max_user_namespaces: 65536
+enroot_max_mnt_namespaces: 65536
