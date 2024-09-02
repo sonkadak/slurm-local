@@ -7,10 +7,11 @@
     - munge
     - facts
 
-- name: Install Slurm with components
+- name: Install components
   hosts: all
   become: true
   roles:
     - hwloc
     - pmix
     - slurm
+    - openmpi
