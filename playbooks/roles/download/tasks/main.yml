@@ -1,0 +1,94 @@
+---
+- name: Create download directory if it does not exist
+  file:
+    path: "{{ download_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Find all yum repository files
+  find:
+    paths: /etc/yum.repos.d/
+    patterns: '*.repo'
+  register: repo_files
+  when: ansible_facts['os_family'] == 'RedHat'
+
+- name: Check which files contain the [devel] repo section
+  command: grep '\[devel\]' {{ item.path }}
+  loop: "{{ repo_files.files }}"
+  register: devel_repo_check
+  ignore_errors: yes
+  changed_when: false
+  when: ansible_facts['os_family'] == 'RedHat'
+
+- name: Enable the 'devel' repository by setting enabled=1
+  lineinfile:
+    path: "{{ item.item.path }}"
+    regexp: '^enabled=0'
+    line: 'enabled=1'
+    backrefs: yes
+  loop: "{{ devel_repo_check.results }}"
+  when:
+    - ansible_facts['os_family'] == 'RedHat'
+    - item.rc == 0
+
+- name: Refresh repository cache after enabling Devel repo
+  yum:
+    name: '*'
+    state: latest
+    update_cache: yes
+  when: ansible_facts['os_family'] == 'RedHat'
+
+- name: Download packages on RedHat-based systems
+  when: ansible_facts['os_family'] == 'RedHat'
+  block:
+    - name: Download RedHat packages and dependencies to {{ download_dir }}
+      command: >
+        yum install -y --downloadonly --downloaddir={{ download_dir }} {{ item }}
+      loop: "{{ redhat_packages }}"
+
+- name: Download packages on Debian-based systems
+  when: ansible_facts['os_family'] == 'Debian'
+  block:
+    - name: Update the apt cache
+      apt:
+        update_cache: yes
+
+    - name: Download Debian packages and dependencies to {{ download_dir }}
+      command: >
+        apt-get download {{ item }}
+      loop: "{{ debian_packages }}"
+
+- name: Download sources
+  ansible.builtin.get_url:
+    url: "{{ item }}"
+    dest: "{{ download_dir }}"
+  loop: "{{ source_packages }}"
+
+# for download enroot packages
+- name: Detect the system architecture
+  set_fact:
+    arch: "{{ ansible_architecture }}"
+
+# For RedHat-based systems
+- name: Download enroot RPM files on RedHat-based systems
+  when: ansible_facts['os_family'] == 'RedHat'
+  block:
+    - name: Download enroot RPM file
+      get_url:
+        url: "{{ item }}"
+        dest: "{{ download_dir }}"
+      with_items:
+        - https://github.com/NVIDIA/enroot/releases/download/v{{ enroot_version }}/enroot-{{ enroot_version }}-1.el8.{{ arch }}.rpm
+        - https://github.com/NVIDIA/enroot/releases/download/v{{ enroot_version }}/enroot+caps-{{ enroot_version }}-1.el8.{{ arch }}.rpm
+
+# For Debian-based systems
+- name: Download enroot DEB files on Debian-based systems
+  when: ansible_facts['os_family'] == 'Debian'
+  block:
+    - name: Download enroot DEB file
+      get_url:
+        url: "{{ item }}"
+        dest: "{{ download_dir }}"
+      with_items:
+        - https://github.com/NVIDIA/enroot/releases/download/v{{ enroot_version }}/enroot_{{ enroot_version }}-1_{{ dpkg_arch.stdout }}.deb
+        - https://github.com/NVIDIA/enroot/releases/download/v{{ enroot_version }}/enroot+caps_{{ enroot_version }}-1_{{ dpkg_arch.stdout }}.deb

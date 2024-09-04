@@ -1,0 +1,6 @@
+---
+- name: Download packages and sources
+  hosts: slurm-test-rocky
+  become: true
+  roles:
+    - download

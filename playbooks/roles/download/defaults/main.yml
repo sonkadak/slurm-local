@@ -1,0 +1,73 @@
+---
+download_dir: "/data/slurm-packages"
+
+redhat_packages:
+  - epel-release
+  - python3
+  - python3-devel
+  - python3-pip
+  - git
+  - wget
+  - curl
+  - pciutils
+  - munge
+  - bash-completion
+  - jq
+  - parallel
+  - pigz
+  - zstd
+  - libev-devel
+  - libevent-devel
+  - zlib
+  - zlib-devel
+  - pandoc
+  - util-linux
+  - munge-devel
+  - readline-devel
+  - mariadb-devel
+  - numactl-devel
+  - pam-devel
+  - http-parser-devel
+  - json-c-devel
+  - perl-ExtUtils-MakeMaker
+  - libatomic
+  - dnf-plugins-core
+
+debian_packages:
+  - build-essential
+  - python3
+  - python3-dev
+  - python3-pip
+  - git
+  - wget
+  - curl
+  - pciutils
+  - munge
+  - libev-dev
+  - libevent-dev
+  - zlib1g
+  - zlib1g-dev
+  - pandoc
+  - bsdmainutils
+  - libmunge-dev
+  - libmariadb-dev
+  - libmariadbclient-dev-compat
+  - libpam0g-dev
+  - libdbus-1-dev
+  - ruby-dev
+
+hwloc_minor_version: 2.5
+hwloc_version: "{{ hwloc_minor_version }}.0"
+pmix_version: 3.2.3
+openmpi_minor_version: 4.0
+openmpi_version: "{{ openmpi_minor_version }}.3"
+slurm_version: 23.02.4
+pyxis_version: 0.11.1
+enroot_version: 3.5.0
+
+source_packages:
+  - https://download.open-mpi.org/release/hwloc/v{{ hwloc_minor_version }}/hwloc-{{ hwloc_version }}.tar.gz
+  - https://github.com/openpmix/openpmix/releases/download/v{{ pmix_version }}/pmix-{{ pmix_version }}.tar.bz2
+  - https://download.open-mpi.org/release/open-mpi/v{{ openmpi_minor_version }}/openmpi-{{ openmpi_version }}.tar.bz2
+  - https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2
+  - https://github.com/NVIDIA/pyxis/archive/v{{ pyxis_version }}.tar.gz
