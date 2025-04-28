@@ -1,0 +1,28 @@
+---
+# defaults file for slurm-repo
+
+# NFS server details
+nfs_server: nfs
+nfs_repo_path: /data/apt-nfs-repo
+nfs_exports: "*(ro,sync,no_subtree_check)"
+
+# Local mount point for the repository
+local_repo_mount: /mnt/apt-nfs-repo
+
+# Repository configuration
+repo_name: slurm-local
+repo_description: "Local repository for Slurm packages"
+
+# Package lists
+nfs_server_packages:
+  - nfs-kernel-server
+  - nfs-common
+  - rpcbind
+
+nfs_client_packages:
+  - nfs-common
+  - rpcbind
+
+common_packages:
+  - apt-transport-https
+  - ca-certificates
