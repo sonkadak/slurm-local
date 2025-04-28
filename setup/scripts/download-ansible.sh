@@ -11,8 +11,8 @@
 set -e
 
 # === Configuration ===
-UBUNTU_VERSIONS=("focal" "jammy" "noble")  # 20.04, 22.04, 24.04
-DEB_PACKAGES=(python3-venv python3-pip)
+UBUNTU_VERSIONS=("jammy")  # Only Ubuntu 22.04
+DEB_PACKAGES=(python3.10-venv python3-pip)
 ANSIBLE_VER="9.8.0"
 ANSIBLE_CORE_VER="2.16.9"
 OUTPUT_DIR="offline_ansible"
@@ -20,19 +20,19 @@ OUTPUT_DIR="offline_ansible"
 mkdir -p "$OUTPUT_DIR/debs"
 mkdir -p "$OUTPUT_DIR/wheels"
 
-# === Step 1: Download python3-venv and pip .deb files per Ubuntu version ===
-echo "📦 Downloading .deb packages for Ubuntu versions: ${UBUNTU_VERSIONS[*]}"
-for VERSION in "${UBUNTU_VERSIONS[@]}"; do
-  OUT="$OUTPUT_DIR/debs/ubuntu-$VERSION"
-  mkdir -p "$OUT"
+# === Step 1: Download python3.10-venv and pip .deb files (Ubuntu 22.04 only) ===
+echo "📦 Downloading .deb packages for Ubuntu 22.04..."
 
-  echo "🔽 Ubuntu $VERSION..."
-  docker run --rm -v "$(pwd)/$OUT:/debs" ubuntu:$VERSION bash -c "
-    apt-get update &&
-    apt-get install -y --download-only ${DEB_PACKAGES[*]} &&
-    cp -v /var/cache/apt/archives/*.deb /debs/
-  "
+OUT="$OUTPUT_DIR/debs/ubuntu-jammy"
+mkdir -p "$OUT"
+
+for pkg in "${DEB_PACKAGES[@]}"; do
+  echo "⬇️  Resolving and downloading $pkg with dependencies..."
+  apt-get download $(apt-cache depends --recurse --no-recommends --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances --no-pre-depends "$pkg" |grep '^\w')
 done
+
+echo "📁 Moving downloaded .deb packages to $OUT"
+mv ./*.deb "$OUT"/ || echo "⚠️ No .deb packages found to move."
 
 # === Step 2: Download Ansible + core Python wheel packages ===
 echo "📦 Downloading pip wheels for ansible==$ANSIBLE_VER and ansible-core==$ANSIBLE_CORE_VER..."

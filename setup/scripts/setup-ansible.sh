@@ -14,7 +14,12 @@ if ! command -v lsb_release >/dev/null; then
   echo "lsb_release not found. Installing..."
   sudo apt-get update && sudo apt-get install -y lsb-release
 fi
+
 UBUNTU_CODENAME=$(lsb_release -c -s)
+if [[ "$UBUNTU_CODENAME" != "jammy" ]]; then
+  echo "❌ This setup script is intended for Ubuntu 22.04 (jammy) only."
+  exit 1
+fi
 
 echo "Detected Ubuntu codename: $UBUNTU_CODENAME"
 
@@ -27,8 +32,7 @@ fi
 
 # ==== 2. Install python3-venv and python3-pip from local debs ====
 echo "📦 Installing python3-venv and python3-pip from local .deb files..."
-sudo dpkg -i "$DEB_DIR"/python3-venv*.deb || true
-sudo dpkg -i "$DEB_DIR"/python3-pip*.deb || true
+sudo dpkg -i "$DEB_DIR"/*.deb || true
 sudo apt-get install -f -y  # Fix missing dependencies using local packages
 
 # ==== 3. Create and activate venv ====
