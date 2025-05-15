@@ -27,3 +27,11 @@ bash setup/scripts/download-nfs-ubuntu.sh
 ```
 bash setup/scripts/setup-ansible.sh
 ```
+## Notice
+
+This project is derived from the original code released by NVIDIA Corporation
+under the BSD 3-Clause License:
+https://github.com/NVIDIA/deepops
+
+All modifications from the original code are sonkadak, 2024.
+See LICENSE for original license terms.
