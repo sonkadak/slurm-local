@@ -1,84 +1,10 @@
 ---
 # tasks file for slurm-repo
 
-# Server setup tasks
-- name: Check if NFS server is installed
-  command: dpkg -l nfs-kernel-server
-  register: nfs_server_check
-  ignore_errors: true
-  changed_when: false
-  delegate_to: localhost
-  run_once: true
+- name: NFS Server setup
+  import_tasks: nfs-server.yml
+  when: "'nfs-server' in group_names"
 
-- name: Install NFS packages from local .deb files (server or client)
-  apt:
-    deb: "{{ item }}"
-  with_fileglob:
-    - "{{ role_path }}/files/nfs-debs-{{ ansible_distribution_release }}/*.deb"
-  when: ansible_os_family == "Debian" and nfs_server_check.rc != 0
-  delegate_to: localhost
-  run_once: true
-
-- name: Create repository directory
-  file:
-    path: "{{ nfs_repo_path }}"
-    state: directory
-    mode: '0755'
-  delegate_to: localhost
-  run_once: true
-
-- name: Configure NFS exports
-  lineinfile:
-    path: /etc/exports
-    line: "{{ nfs_repo_path }} {{ nfs_exports }}"
-    create: yes
-  notify: reload nfs exports
-  delegate_to: localhost
-  run_once: true
-
-# Client setup tasks
-- name: Check if NFS client is installed
-  command: dpkg -l nfs-common
-  register: nfs_client_check
-  ignore_errors: true
-  changed_when: false
-
-- name: Fail if NFS client is not installed
-  fail:
-    msg: |
-      NFS client package is not installed. In air-gapped environment, please:
-      1. Ensure local .deb packages are ready
-      2. Install manually or automate with dpkg
-      3. Run this playbook again
-  when: nfs_client_check.rc != 0
-
-- name: Create local repository mount point
-  file:
-    path: "{{ local_repo_mount }}"
-    state: directory
-    mode: '0755'
-
-- name: Mount NFS repository
-  mount:
-    path: "{{ local_repo_mount }}"
-    src: "{{ nfs_server }}:{{ nfs_repo_path }}"
-    fstype: nfs
-    opts: ro
-    state: mounted
-
-- name: Add local repository configuration
-  template:
-    src: slurm-local.list.j2
-    dest: /etc/apt/sources.list.d/slurm-local.list
-    mode: '0644'
-
-- name: Verify repository access
-  apt:
-    update_cache: yes
-  register: apt_update_result
-  ignore_errors: yes
-
-- name: Check if repository is accessible
-  fail:
-    msg: "Failed to access the local repository. Please check NFS mount and repository configuration."
-  when: apt_update_result is failed
+- name: NFS Client setup
+  import_tasks: nfs-client.yml
+  when: "'compute' in group_names"
