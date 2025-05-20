@@ -1,0 +1,18 @@
+---
+# Air-gapped installation
+local_install: true
+nfs_server: 192.168.0.176
+nfs_path: /data
+nfs_repo_path: "{{ nfs_path }}/slurm-local-repo"
+nfs_exports_option: "*(rw,sync,no_subtree_check,no_root_squash)"
+local_repo_mount: /mnt/nfs
+local_source_path: "{{ local_repo_mount }}/source-packages"
+nvidia_run_file: cuda_12.8.1_570.124.06_linux.run
+local_repo_sections:
+  - common
+  - munge
+  - openmpi
+  - pmix
+  - slurm
+  - enroot
+  - pyxis
