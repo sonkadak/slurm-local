@@ -1,3 +1,8 @@
 # {{ ansible_managed }}
 # Local repository for Slurm packages
-deb [trusted=yes] file:{{ local_repo_mount }} {{ repo_name }} main 
+
+{% for section in local_repo_sections %}
+# {{ section }}
+deb [trusted=yes] file://{{ local_repo_mount }}/offline_repo/{{ section }} ./
+
+{% endfor %}

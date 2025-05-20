@@ -1,0 +1,83 @@
+---
+- name: Check if NFS client is installed
+  command: dpkg -l nfs-common
+  register: nfs_client_check
+  ignore_errors: true
+  changed_when: false
+
+- name: Copy NFS packages to nfs-client node
+  copy:
+    src: "{{ playbook_dir }}/../setup/scripts/offline_nfs"
+    dest: "/tmp/"
+  when: nfs_client_check.stdout is search('^un\\s+nfs-common', multiline=True)
+
+- name: Find NFS deb files
+  find:
+    paths: /tmp/nfs-common
+    patterns: "*.deb"
+  register: deb_files
+  when: nfs_client_check.stdout is search('^un\\s+nfs-common', multiline=True)
+
+- name: Install NFS client packages from static files if not installed
+  apt:
+    deb: "{{ item.path }}"
+  loop: "{{ deb_files.files }}"
+  when: nfs_client_check.stdout is search('^un\\s+nfs-common', multiline=True)
+
+- name: Add temporary apt repository configuration
+  template:
+    src: nfs-local.list.j2
+    dest: /etc/apt/sources.list.d/nfs-local.list
+    mode: '0644'
+
+- name: Verify temporary repository access
+  apt:
+    update_cache: yes
+  register: apt_update_result
+  ignore_errors: yes
+
+- name: Install NFS packages from temporary repo
+  apt:
+    name:
+      - nfs-common
+    state: present
+
+- name: Fail if NFS client is not installed
+  fail:
+    msg: |
+      NFS client package is not installed. In air-gapped environment, please:
+      1. Ensure local .deb packages are ready
+      2. Install manually or automate with dpkg
+      3. Run this playbook again
+  when: nfs_client_check.rc != 0
+
+- name: Create local repository mount point
+  file:
+    path: "{{ local_repo_mount }}"
+    state: directory
+    mode: '0755'
+
+- name: Mount NFS repository
+  mount:
+    path: "{{ local_repo_mount }}"
+    src: "{{ nfs_server }}:{{ nfs_repo_path }}"
+    fstype: nfs
+    opts: ro
+    state: mounted
+
+- name: Add local repository configuration
+  template:
+    src: slurm-local.list.j2
+    dest: /etc/apt/sources.list.d/slurm-local.list
+    mode: '0644'
+
+- name: Verify repository access
+  apt:
+    update_cache: yes
+  register: apt_update_result
+  ignore_errors: yes
+
+- name: Check if repository is accessible
+  fail:
+    msg: "Failed to access the local repository. Please check NFS mount and repository configuration."
+  when: apt_update_result is failed
