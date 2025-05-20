@@ -9,7 +9,7 @@ Ansible machine is needed and can reach to slurm nodes via ssh
 Deploy slurm cluster within ansible machine as a slurm controller
 
 ## Air-gapped installation
-- Supported OS: Ubuntu
+- Supported OS: Ubuntu 22.04
 Ansible machine runs NFS server with local repository for required package installation
 
 ### Prereuisite
@@ -17,16 +17,29 @@ Ansible machine runs NFS server with local repository for required package insta
 1. Prepare static packages to setup ansible machine
 ```
 bash setup/scripts/download-ansible.sh
-
-bash setup/scripts/download-nfs-ubuntu.sh
 ```
 
-2. Copy static packages to ansible machine (default path: `setup/scripts/offline_ansible`)
+2. Copy static packages to ansible machine (default source path: `setup/scripts/offline_ansible`)
 
 3. Run setup script
 ```
 bash setup/scripts/setup-ansible.sh
 ```
+
+#### Setup NFS Server
+1. Run download script to download NFS packages
+```
+bash setup/scripts/download-nfs-ubuntu.sh
+```
+
+2. Copy Packages to host which has NFS server role (default source path: `setup/scripts/offline_nfs`)
+
+3. Run NFS configuration playbook
+> Update nfs-server group in `inventory` before run playbook
+```
+ansible-playbook playbooks/config-nfs-server.yml
+```
+
 ## Notice
 
 This project is derived from the original code released by NVIDIA Corporation
