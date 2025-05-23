@@ -26,6 +26,12 @@ bash setup/scripts/download-ansible.sh
 bash setup/scripts/setup-ansible.sh
 ```
 
+#### Configure ansible variables
+Review var file under Air-gapped installation section
+```
+./group_vars/all.yml
+```
+
 #### Setup NFS Server
 1. Run download script to download NFS packages
 ```
@@ -38,6 +44,12 @@ bash setup/scripts/download-nfs-ubuntu.sh
 > Update nfs-server group in `inventory` before run playbook
 ```
 ansible-playbook playbooks/config-nfs-server.yml
+```
+
+#### Install NVIDIA GPU Driver and CUDA
+Run playbook
+```
+ansible-playbook playbooks/nvidia-driver.yml
 ```
 
 ## Notice
