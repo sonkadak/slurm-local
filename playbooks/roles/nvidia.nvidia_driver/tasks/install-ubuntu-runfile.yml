@@ -1,0 +1,61 @@
+---
+- name: Check if nvidia-smi is available
+  command: nvidia-smi
+  register: nvidia_smi_check
+  ignore_errors: true
+  changed_when: false
+
+- name: Copy NVIDIA .run installer
+  copy:
+    src: "{{ local_repo_mount }}/{{ nvidia_run_file }}"
+    dest: /tmp/{{ nvidia_run_file }}
+    remote_src: true
+    mode: '0755'
+  when: nvidia_smi_check.rc != 0
+
+- name: Install build dependencies
+  apt:
+    name:
+      - gcc
+      - g++
+      - build-essential
+    state: present
+    update_cache: yes
+  when: nvidia_smi_check.rc != 0
+
+- name: Install NVIDIA driver and CUDA Toolkit
+  shell: |
+    /tmp/{{ nvidia_run_file }} --silent --toolkit --driver
+  args:
+    creates: /usr/local/cuda/bin/nvcc
+  register: install_driver
+  when: nvidia_smi_check.rc != 0
+
+# Setup nvidia-persistenced manually
+- name: Create working directory
+  file:
+    path: /tmp/nvidia-persistenced
+    state: directory
+    mode: '0755'
+
+- name: Extract nvidia-persistenced-init archive
+  unarchive:
+    src: /usr/share/doc/NVIDIA_GLX-1.0/samples/nvidia-persistenced-init.tar.bz2
+    dest: /tmp/nvidia-persistenced
+    remote_src: yes
+  become: true
+
+- name: Install nvidia-persistenced systemd service
+  command: bash install.sh systemd
+  args:
+    chdir: /tmp/nvidia-persistenced/nvidia-persistenced-init
+    creates: /usr/lib/systemd/system/nvidia-persistenced.service
+  become: true
+
+- name: Enable and start nvidia-persistenced daemon
+  systemd:
+    name: nvidia-persistenced
+    enabled: true
+    state: started
+    daemon_reload: true
+  become: true
