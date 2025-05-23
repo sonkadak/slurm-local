@@ -13,17 +13,16 @@ UBUNTU_VERSIONS=("jammy")  # Only Ubuntu 22.04
 UBUNTU_CODENAME=$(lsb_release -c |awk -F' ' '{print $2}')
 DEB_PACKAGES=(nfs-common nfs-kernel-server)
 OUTPUT_DIR="offline_nfs"
-OUT="$OUTPUT_DIR/debs/ubuntu-${UBUNTU_CODENAME}"
 
 # === Download ===
 echo "📦 Downloading .deb packages for NFS..."
 
 for pkg in "${DEB_PACKAGES[@]}"; do
   echo "⬇️  Resolving and downloading $pkg with dependencies..."
-  mkdir -p ${OUT}/${pkg}
+  mkdir -p ${OUTPUT_DIR}/${pkg}
   apt-get download $(apt-cache depends --recurse --no-recommends --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances --no-pre-depends "$pkg" |grep '^\w')
-  echo "📁 Moving downloaded .deb packages to $OUT/$pkg"
-  mv ./*.deb "$OUT"/"$pkg"/ || echo "⚠️ No .deb packages found to move."
+  echo "📁 Moving downloaded .deb packages to $OUTPUT_DIR/$pkg"
+  mv ./*.deb "$OUTPUT_DIR"/"$pkg"/ || echo "⚠️ No .deb packages found to move."
 done
 
 echo "🎉 All .deb packages downloaded for: ${UBUNTU_VERSIONS[*]}"
