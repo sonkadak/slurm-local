@@ -2,8 +2,8 @@
 # Air-gapped installation
 local_install: true
 nfs_server: 192.168.0.176
-nfs_path: /data
-nfs_repo_path: "{{ nfs_path }}/slurm-local-repo"
+repo_path_root: /data
+nfs_repo_path: "{{ repo_path_root }}/slurm-local-repo"
 nfs_exports_option: "*(rw,sync,no_subtree_check,no_root_squash)"
 local_repo_mount: /mnt/nfs
 local_source_path: "{{ local_repo_mount }}/source-packages"
