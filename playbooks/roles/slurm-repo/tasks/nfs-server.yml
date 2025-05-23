@@ -6,25 +6,6 @@
   changed_when: false
   run_once: true
 
-- name: Copy NFS server packages to nfs-server node
-  copy:
-    src: "{{ playbook_dir }}/../setup/scripts/offline_nfs"
-    dest: "/tmp/"
-  run_once: true
-  when: nfs_server_check.stdout is search('^un\\s+nfs-kernel-server', multiline=True)
-
-- name: Add temporary apt repository configuration
-  template:
-    src: nfs-local.list.j2
-    dest: /etc/apt/sources.list.d/nfs-local.list
-    mode: '0644'
-
-- name: Verify temporary repository access
-  apt:
-    update_cache: yes
-  register: apt_update_result
-  ignore_errors: yes
-
 - name: Install NFS server packages from temporary repo
   apt:
     name:
