@@ -1,7 +1,7 @@
 # Slurm-local
 Ansible playbook for Slurm clustering
 
-## Requirements
+## RequirementsConfigure ansible variables
 1. Dedicated ansible machine (recommanded)
 Ansible machine is needed and can reach to slurm nodes via ssh
 
@@ -16,31 +16,58 @@ Ansible machine runs NFS server with local repository for required package insta
 #### Setup ansible machine
 1. Prepare static packages to setup ansible machine
 ```
-bash setup/scripts/download-ansible.sh
+cd setup/scripts
+bash download-ansible.sh
 ```
 
 2. Copy static packages to ansible machine (default source path: `setup/scripts/offline_ansible`)
 
 3. Run setup script
 ```
-bash setup/scripts/setup-ansible.sh
+bash setup-ansible.sh
+```
+
+4. Verify ansible environment
+```
+source ansible/bin/activate
+
+(ansible) $ pip list |grep ansible
+ansible      9.8.0
+ansible-core 2.16.9
+```
+
+#### Download required packages for slurm cluster
+1. Run download scripts
+```
+bash download-slurm-pkgs-deb.sh
+```
+
+2. Create package index
+```
+bash setup-nfs-repo.sh
+```
+
+3. Review index info
+Filename must start with '`./`'
+```
+cat offline_repo/*/Packages |grep Filename
+Filename: ./libnsl2_1.3.0-2build2_amd64.deb
+Filename: ./libnuma-dev_2.0.14-3ubuntu2_amd64.deb
+...
 ```
 
 #### Configure ansible variables
-Review var file under Air-gapped installation section
+Configure and review var file under the `# Air-gapped installation` section.  
+All values under this section must be checked before run playbook.
 ```
 ./group_vars/all.yml
 ```
 
+
 #### Setup NFS Server
-1. Run download script to download NFS packages
-```
-bash setup/scripts/download-nfs-ubuntu.sh
-```
+1. Copy `slurm-local` repository (including downloaded packages) to host which is the NFS server (default source path: `setup/scripts/offline_repo`)
 
-2. Copy Packages to host which has NFS server role (default source path: `setup/scripts/offline_nfs`)
-
-3. Run NFS configuration playbook
+2. Run NFS configuration playbook
 > Update nfs-server group in `inventory` before run playbook
 ```
 ansible-playbook playbooks/config-nfs-server.yml
