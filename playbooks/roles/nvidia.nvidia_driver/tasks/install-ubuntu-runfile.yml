@@ -7,7 +7,7 @@
 
 - name: Copy NVIDIA .run installer
   copy:
-    src: "{{ local_repo_mount }}/{{ nvidia_run_file }}"
+    src: "{{ local_repo_mount }}/offline_repo/{{ nvidia_run_file }}"
     dest: /tmp/{{ nvidia_run_file }}
     remote_src: true
     mode: '0755'
