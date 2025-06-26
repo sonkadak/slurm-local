@@ -7,6 +7,11 @@ OUT="offline_repo"
 mkdir -p "$OUT"
 
 # 패키지 그룹 정의
+NFS_PKGS=(
+  nfs-common
+  nfs-kernel-server
+)
+
 COMMON_PKGS=(
   build-essential
   python3
@@ -30,10 +35,15 @@ PMIX_DEP_PKGS=(
 SLURM_DEP_PKGS=(
   libmunge-dev
   libmariadb-dev
-  libmariadbclient-dev-compat
+  libmariadb-dev-compat
   libpam0g-dev
   libdbus-1-dev
   ruby-dev
+  mariadb-server
+  python3-pymysql
+  mailutils
+  policykit-1
+  numactl
 )
 
 OPENMPI_DEP_PKGS=(
@@ -48,6 +58,8 @@ ENROOT_DEP_PKGS=(
   pigz
   enroot
   enroot+caps
+  jq
+  parallel
 )
 
 download_group() {
@@ -72,6 +84,7 @@ download_group() {
 }
 
 # 실행
+download_group nfs "${NFS_PKGS[@]}"
 download_group common "${COMMON_PKGS[@]}"
 download_group munge "${MUNGE_PKGS[@]}"
 download_group enroot "${ENROOT_DEP_PKGS[@]}"
