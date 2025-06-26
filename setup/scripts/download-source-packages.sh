@@ -11,7 +11,7 @@ hwloc_version="${hwloc_minor_version}.0"
 pmix_version="3.2.3"
 openmpi_minor_version="4.0"
 openmpi_version="${openmpi_minor_version}.3"
-slurm_version="24.11.0"
+slurm_version="23.02.4"
 pyxis_version="0.11.1"
 enroot_version="3.5.0"
 

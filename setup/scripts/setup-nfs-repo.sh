@@ -13,7 +13,10 @@ for target in "${REPO_ROOT[@]}"; do
     fi
 
     echo "📦 Create index in: $dir"
-    dpkg-scanpackages "$dir" /dev/null | tee "$dir/Packages" | gzip -9c > "$dir/Packages.gz"
+    (
+      cd "$dir"
+      dpkg-scanpackages . /dev/null | tee "Packages" | gzip -9c > "Packages.gz"
+    )
   done
 done
 
