@@ -1,5 +1,14 @@
 ---
 # defaults file for slurm-repo
+local_repo_sections:
+  - common
+  - munge
+  - openmpi
+  - pmix
+  - slurm
+  - enroot
+  - pyxis
+
 # Package lists
 nfs_server_packages:
   - nfs-kernel-server

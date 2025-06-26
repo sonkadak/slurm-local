@@ -1,8 +1,14 @@
 # {{ ansible_managed }}
 # Local repository for Slurm packages
 
+{% if 'nfs-server' in group_names %}
+{% set repo_root = repo_path_root %}
+{% elif 'nfs-client' in group_names %}
+{% set repo_root = local_repo_mount %}
+{% endif %}
+
 {% for section in local_repo_sections %}
 # {{ section }}
-deb [trusted=yes] file://{{ local_repo_mount }}/offline_repo/{{ section }} ./
+deb [trusted=yes] file://{{ repo_root }}/offline_repo/{{ section }} ./
 
 {% endfor %}

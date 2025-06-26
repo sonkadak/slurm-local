@@ -4,7 +4,6 @@
   register: nfs_server_check
   ignore_errors: true
   changed_when: false
-  run_once: true
 
 - name: Install NFS server packages from temporary repo
   apt:
@@ -12,23 +11,20 @@
       - nfs-kernel-server
     state: present
 
-- name: Create repository directory
-  file:
-    path: "{{ nfs_repo_path }}"
-    state: directory
-    mode: '0755'
-  run_once: true
-
-- name: Copy offline_repo to NFS repository path
+- name: Copy NFS server packages to nfs-server node
   copy:
     src: "{{ playbook_dir }}/../setup/scripts/offline_repo"
-    dest: "{{ nfs_repo_path }}/"
-  run_once: true
+    dest: "{{ repo_path_root }}"
 
 - name: Configure NFS exports
   lineinfile:
     path: /etc/exports
-    line: "{{ nfs_repo_path }} {{ nfs_exports_option }}"
+    line: "{{ repo_path_root }} {{ nfs_exports_option }}"
     create: yes
   notify: reload nfs exports
-  run_once: true
+
+- name: Add local repository configuration
+  template:
+    src: slurm-local.list.j2
+    dest: /etc/apt/sources.list.d/slurm-local.list
+    mode: '0644'
