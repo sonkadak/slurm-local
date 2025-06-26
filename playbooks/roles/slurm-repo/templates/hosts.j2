@@ -1,0 +1,5 @@
+# --- Managed by Ansible: inventory hosts ---
+{% for host in groups['all'] %}
+{{ hostvars[host]['ansible_default_ipv4']['address'] }} {{ host }}
+{% endfor %}
+# --- End of inventory hosts block ---

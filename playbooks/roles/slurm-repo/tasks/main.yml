@@ -1,18 +1,30 @@
 ---
 # tasks file for slurm-repo
+- name: Add inventory host mappings to /etc/hosts
+  blockinfile:
+    path: /etc/hosts
+    marker: "# {mark} ANSIBLE INVENTORY HOSTS"
+    block: "{{ lookup('template', 'hosts.j2') }}"
+    create: yes
+
 - name: Create local nfs repository directory
   file:
     path: "{{ repo_path_root }}"
     state: directory
     mode: '0755'
-  run_once: true
 
 - name: Copy NFS server packages to nfs-server node
   copy:
-    src: "{{ playbook_dir }}/../setup/scripts/offline_nfs"
-    dest: "{{ repo_path_root }}"
-  run_once: true
-  when: nfs_server_check.stdout is search('^un\\s+nfs-kernel-server', multiline=True)
+    src: "{{ playbook_dir }}/../setup/scripts/offline_repo/{{ item }}"
+    dest: "{{ repo_path_root }}/offline_repo/"
+  with_items:
+    - nfs
+
+- name: Comment out all 'deb' lines in sources.list
+  ansible.builtin.replace:
+    path: /etc/apt/sources.list
+    regexp: '^(?!#)(\s*deb\s+)'
+    replace: '# \1'
 
 - name: Add temporary apt repository configuration
   template:

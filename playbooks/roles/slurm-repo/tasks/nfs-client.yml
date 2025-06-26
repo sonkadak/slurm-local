@@ -29,7 +29,7 @@
 - name: Mount NFS repository
   mount:
     path: "{{ local_repo_mount }}"
-    src: "{{ nfs_server }}:{{ nfs_repo_path }}"
+    src: "{{ nfs_server }}:{{ repo_path_root }}"
     fstype: nfs
     opts: ro
     state: mounted
