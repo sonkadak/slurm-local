@@ -4,13 +4,13 @@
   tasks:
     - name: Ensure NFS deb packages exist
       stat:
-        path: "{{ playbook_dir }}/../setup/scripts/offline_nfs"
-      register: nfs_repo_path
+        path: "{{ playbook_dir }}/../setup/scripts/offline_repo"
+      register: local_files
 
     - name: Fail if .deb files are missing      
       fail:
-        msg: "NFS .deb packages not found. Please run the download script(./scripts/download-nfs-ubuntu.sh) first."
-      when: not nfs_repo_path.stat.exists
+        msg: "NFS .deb packages not found. Please run the download script(./scripts/download-slurm-pkgs-deb.sh) first."
+      when: not local_files.stat.exists
 
 - name: Configure NFS
   hosts: all
