@@ -8,10 +8,22 @@
     path: "{{ hwloc_build_dir }}"
     state: directory
 
-- name: Download hwloc source
+- name: Copy hwloc source from NFS if local install
+  copy:
+    src: >-
+      {{
+        (inventory_hostname in groups['nfs-server'])
+        | ternary(repo_path_root, local_repo_mount)
+      }}/source-packages/hwloc-{{ hwloc_version }}.tar.gz
+    dest: "{{ hwloc_build_dir }}/hwloc-{{ hwloc_version }}.tar.gz"
+    remote_src: yes
+  when: local_install | default(false)
+
+- name: Download hwloc source from URL if not local install
   get_url:
     url: "https://download.open-mpi.org/release/hwloc/v{{ hwloc_version_major }}.{{ hwloc_version_minor }}/hwloc-{{ hwloc_version }}.tar.gz"
     dest: "{{ hwloc_build_dir }}/hwloc-{{ hwloc_version }}.tar.gz"
+  when: not local_install | default(false)
 
 - name: Extract hwloc source
   unarchive:
