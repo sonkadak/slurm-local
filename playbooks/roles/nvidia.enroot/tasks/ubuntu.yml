@@ -19,7 +19,7 @@
 # We need to do a remove/install dance due to dependency conflicts
 # when installing raw packages from Github
 - name: Correctly install and/or upgrade Enroot packages from deb
-  when: enroot_ubuntu_repo is not defined
+  when: enroot_ubuntu_repo is not defined and not local_install
   block:
   - name: gather package facts for comparison
     package_facts:
@@ -37,10 +37,18 @@
       state: "{{ enroot_package_state }}"
     with_items: "{{ enroot_deb_packages }}"
     environment: "{{proxy_env if proxy_env is defined else {}}}"
+    
+- name: enroot deb packages - local install
+  apt:
+    name:
+      - enroot
+      - enroot+caps
+    state: present
+  when: local_install
 
 - name: Install enroot packages from repos
   apt:
     name: "{{ enroot_packages }}"
     state: "{{ enroot_package_state }}"
-  when: enroot_ubuntu_repo is defined
+  when: enroot_ubuntu_repo is defined and not local_install
   
