@@ -6,13 +6,28 @@
     mode: "0755"
   tags: pyxis
 
-- name: copy pyxis source
+- name: copy pyxis source from local
+  unarchive:
+    src: >-
+      {{
+        (inventory_hostname in groups['nfs-server'])
+        | ternary(repo_path_root, local_repo_mount)
+      }}/source-packages/v{{ slurm_pyxis_version }}.tar.gz
+    remote_src: yes
+    dest: /usr/local/src/pyxis
+    extra_opts:
+      - --strip-components=1
+  when: local_install | default(false)
+  tags: pyxis
+
+- name: copy pyxis source from url
   unarchive:
     src: "{{ slurm_pyxis_tarball_url }}"
     remote_src: yes
     dest: /usr/local/src/pyxis
     extra_opts:
       - --strip-components=1
+  when: not local_install | default(false)
   tags: pyxis
 
 - name: clean pyxis source directory
