@@ -7,10 +7,22 @@
     path: "{{ slurm_build_dir }}"
     state: directory
 
-- name: Download Slurm source
+- name: Copy Slurm source from NFS if local install
+  copy:
+    src: >-
+      {{
+        (inventory_hostname in groups['nfs-server'])
+        | ternary(repo_path_root, local_repo_mount)
+      }}/source-packages/slurm-{{ slurm_version }}.tar.bz2
+    dest: "{{ slurm_build_dir }}/slurm-{{ slurm_version }}.tar.bz2"
+    remote_src: yes
+  when: local_install | default(false)
+
+- name: Download Slurm source from URL if not local install
   ansible.builtin.get_url:
     url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
     dest: "{{ slurm_build_dir }}/slurm-{{ slurm_version }}.tar.bz2"
+  when: not local_install | default(false)
 
 - name: Extract Slurm source
   ansible.builtin.unarchive:

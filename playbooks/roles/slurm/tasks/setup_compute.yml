@@ -124,6 +124,7 @@
     - slurmd.service
 
 - name: start slurmd
+  become: true
   systemd:
     name: slurmd
     state: restarted
