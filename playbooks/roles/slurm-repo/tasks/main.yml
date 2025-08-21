@@ -13,35 +13,28 @@
     state: directory
     mode: '0755'
 
-- name: Copy NFS server packages to nfs-server node
+- name: Copy NFS server packages
   copy:
-    src: "{{ playbook_dir }}/../setup/scripts/offline_repo/{{ item }}"
-    dest: "{{ repo_path_root }}/offline_repo/"
-  with_items:
-    - nfs
+    src: "{{ playbook_dir }}/../setup/scripts/offline_repo/nfs"
+    dest: "{{ repo_path_root }}/offline_repo/nfs"
+  when: ansible_facts['os_family'] == "Debian"
 
-- name: Comment out all 'deb' lines in sources.list
-  ansible.builtin.replace:
-    path: /etc/apt/sources.list
-    regexp: '^(?!#)(\s*deb\s+)'
-    replace: '# \1'
+- name: Disable default online repositories based on OS version
+  import_tasks: pre-setup-deb.yml
+  when: ansible_facts['os_family'] == "Debian"
 
-- name: Add temporary apt repository configuration
-  template:
-    src: nfs-local.list.j2
-    dest: /etc/apt/sources.list.d/nfs-local.list
-    mode: '0644'
-
-- name: Verify temporary repository access
-  apt:
-    update_cache: yes
-  register: apt_update_result
-  ignore_errors: yes
-
-- name: NFS Server setup
+- name: NFS Server setup for Debian
   import_tasks: nfs-server.yml
-  when: "'nfs-server' in group_names"
+  when: "'nfs-server' in group_names and ansible_facts['os_family'] == 'Debian'"
 
-- name: NFS Client setup
+- name: NFS Server setup for Rocky
+  import_tasks: nfs-server-rocky.yml
+  when: "'nfs-server' in group_names and ansible_facts['os_family'] == 'RedHat'"
+
+- name: NFS Client setup for Debian
   import_tasks: nfs-client.yml
-  when: "'compute' in group_names"
+  when: "'compute' in group_names and ansible_facts['os_family'] == 'Debian'"
+
+- name: NFS Client setup for Rocky
+  import_tasks: nfs-client-rocky.yml
+  when: "'compute' in group_names and ansible_facts['os_family'] == 'RedHat'"
