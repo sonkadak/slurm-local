@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+# Local repository for NFS packages on Rocky Linux
+
+[nfs-local]
+name=NFS Local Packages
+baseurl=file://{{ repo_path_root }}/offline_repo/nfs
+enabled=1
+gpgcheck=0

@@ -1,0 +1,32 @@
+---
+- name: Check for ubuntu.sources file (for Noble and later)
+  stat:
+    path: /etc/apt/sources.list.d/ubuntu.sources
+  register: ubuntu_sources_file
+
+- name: Disable online repos on Ubuntu 22.04 (Jammy)
+  ansible.builtin.replace:
+    path: /etc/apt/sources.list
+    regexp: '^(?!#)(\s*deb\s+)'
+    replace: '# \1'
+  when: not ubuntu_sources_file.stat.exists
+
+- name: Disable online repos on Ubuntu 24.04 (Noble) and later
+  ansible.builtin.command:
+    cmd: mv /etc/apt/sources.list.d/ubuntu.sources /etc/apt/sources.list.d/ubuntu.sources.disabled
+  args:
+    removes: /etc/apt/sources.list.d/ubuntu.sources
+    creates: /etc/apt/sources.list.d/ubuntu.sources.disabled
+  when: ubuntu_sources_file.stat.exists
+
+- name: Add temporary apt repository configuration
+  template:
+    src: nfs-local.list.j2
+    dest: /etc/apt/sources.list.d/nfs-local.list
+    mode: '0644'
+
+- name: Verify temporary repository access
+  apt:
+    update_cache: yes
+  register: apt_update_result
+  ignore_errors: yes
