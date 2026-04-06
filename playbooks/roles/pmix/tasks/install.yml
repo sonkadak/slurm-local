@@ -52,10 +52,22 @@
     path: "{{ pmix_build_dir }}"
     state: directory
 
-- name: Download PMIx source
+- name: Copy PMIx source from NFS if local install
+  copy:
+    src: >-
+      {{
+        (inventory_hostname in groups['nfs-server'])
+        | ternary(repo_path_root, local_repo_mount)
+      }}/source-packages/pmix-{{ pmix_version }}.tar.bz2
+    dest: "{{ pmix_build_dir }}/pmix-{{ pmix_version }}.tar.bz2"
+    remote_src: yes
+  when: local_install | default(false)
+
+- name: Download PMIx source from URL if not local install
   get_url:
     url: "https://github.com/openpmix/openpmix/releases/download/v{{ pmix_version }}/pmix-{{ pmix_version }}.tar.bz2"
     dest: "{{ pmix_build_dir }}/pmix-{{ pmix_version }}.tar.bz2"
+  when: not local_install | default(false)
 
 - name: Extract PMIx source
   unarchive:

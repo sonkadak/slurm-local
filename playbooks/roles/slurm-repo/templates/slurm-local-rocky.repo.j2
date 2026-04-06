@@ -1,0 +1,22 @@
+# {{ ansible_managed }}
+# Local repository for Slurm packages on Rocky Linux
+
+{% if 'nfs-server' in group_names %}
+{% set repo_root = repo_path_root %}
+{% elif 'nfs-client' in group_names %}
+{% set repo_root = local_repo_mount %}
+{% endif %}
+
+{% for section in local_repo_sections %}
+{% if section != 'openmpi' %}
+# {{ section }}
+[{{ section }}]
+name=Local Repository - {{ section }} 
+baseurl=file://{{ repo_root }}/offline_repo/{{ section }}
+enabled=1
+gpgcheck=0
+
+{% endif %}
+{% endfor %}
+
+

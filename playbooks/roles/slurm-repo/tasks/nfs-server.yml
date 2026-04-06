@@ -1,0 +1,30 @@
+---
+- name: Check if NFS server is installed
+  command: dpkg -l nfs-kernel-server
+  register: nfs_server_check
+  ignore_errors: true
+  changed_when: false
+
+- name: Install NFS server packages from temporary repo
+  apt:
+    name:
+      - nfs-kernel-server
+    state: present
+
+- name: Copy NFS server packages to nfs-server node
+  copy:
+    src: "{{ playbook_dir }}/../setup/scripts/offline_repo"
+    dest: "{{ repo_path_root }}"
+
+- name: Configure NFS exports
+  lineinfile:
+    path: /etc/exports
+    line: "{{ repo_path_root }} {{ nfs_exports_option }}"
+    create: yes
+  notify: reload nfs exports
+
+- name: Add local repository configuration
+  template:
+    src: slurm-local.list.j2
+    dest: /etc/apt/sources.list.d/slurm-local.list
+    mode: '0644'

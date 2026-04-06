@@ -19,7 +19,7 @@
     name:
       - libmunge-dev
       - libmariadb-dev
-      - libmariadbclient-dev-compat
+      - libmariadb-dev-compat
       - libpam0g-dev
       - libdbus-1-dev
       - ruby-dev

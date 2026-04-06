@@ -90,29 +90,32 @@
     - slurmdbd.service
     - slurmctld.service
 
-- name: create cluster
+- name: Check if Slurm cluster exists
+  command: sacctmgr list cluster where name={{ slurm_cluster_name }} format=Name
+  register: cluster_check
+  changed_when: false
+  failed_when: false
+
+- name: Create cluster if it does not exist
   command: sacctmgr -i add cluster {{ slurm_cluster_name }}
-  register: create_cluster_result
-  failed_when: "create_cluster_result.rc != 0 and 'already exists' not in create_cluster_result.stdout"
-  changed_when: "'already exists' not in create_cluster_result.stdout"
-  environment:
-    PATH: '{{ slurm_install_dir }}/bin:{{ ansible_env.PATH }}'
-  run_once: true
+  when: "'{{ slurm_cluster_name }}' not in cluster_check.stdout"
 
-- name: create account
+- name: Check if Slurm account exists
+  command: sacctmgr list account where name=compute-account format=Name
+  register: account_check
+  changed_when: false
+  failed_when: false
+
+- name: Create account if it does not exist
   command: sacctmgr -i add account compute-account Description="Compute Accounts" Organization="Prestige"
-  register: create_account_result
-  failed_when: "create_account_result.rc != 0 and 'Nothing new added' not in create_account_result.stdout"
-  changed_when: "'Nothing new added' not in create_account_result.stdout"
-  environment:
-    PATH: '{{ slurm_install_dir }}/bin:{{ ansible_env.PATH }}'
+  when: "'compute-account' not in account_check.stdout"
 
-- name: create users
-  command: sacctmgr -i create user {{ item }} account=compute-account adminlevel=None
-  register: create_user_result
-  failed_when: "create_user_result.rc != 0 and 'Nothing new added' not in create_user_result.stdout"
-  changed_when: "'Nothing new added' not in create_user_result.stdout"
-  with_items:
-    - "{{ slurm_account_user }}"
-  environment:
-    PATH: '{{ slurm_install_dir }}/bin:{{ ansible_env.PATH }}'
+- name: Check if Slurm user exists
+  command: sacctmgr list user where name={{ slurm_account_user }} format=Name -nP
+  register: user_check
+  changed_when: false
+  failed_when: false
+
+- name: Create user if it does not exist
+  command: sacctmgr -i create user {{ slurm_account_user }} account=compute-account adminlevel=None
+  when: slurm_account_user not in user_check.stdout_lines

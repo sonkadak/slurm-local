@@ -12,7 +12,7 @@ set -e
 
 # === Configuration ===
 UBUNTU_VERSIONS=("jammy")  # Only Ubuntu 22.04
-DEB_PACKAGES=(python3.10-venv python3-pip)
+DEB_PACKAGES=(python3.10-venv python3-pip sshpass)
 ANSIBLE_VER="9.8.0"
 ANSIBLE_CORE_VER="2.16.9"
 OUTPUT_DIR="offline_ansible"

@@ -1,3 +1,0 @@
----
-nfs_repo_path: /srv/nfs/slurm-repo
-nfs_exports: 192.168.0.0/24(ro,sync,no_subtree_check)

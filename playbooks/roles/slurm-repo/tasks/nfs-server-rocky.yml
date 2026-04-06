@@ -1,0 +1,45 @@
+---
+- name: Add local repository configuration for NFS
+  ansible.builtin.template:
+    src: nfs-local-rocky.repo.j2
+    dest: /etc/yum.repos.d/nfs-local.repo
+    mode: '0644'
+
+- name: Install NFS server and repository creation packages
+  ansible.builtin.dnf:
+    name:
+      - nfs-utils
+    state: present
+    disablerepo: "*"
+    enablerepo: "nfs-local"
+
+- name: Copy NFS server packages to nfs-server node
+  copy:
+    src: "{{ playbook_dir }}/../setup/scripts/offline_repo"
+    dest: "{{ repo_path_root }}"
+
+- name: Configure NFS exports
+  ansible.builtin.lineinfile:
+    path: /etc/exports
+    line: "{{ repo_path_root }} {{ nfs_exports_option }}"
+    create: yes
+
+- name: Start and enable NFS server service
+  ansible.builtin.service:
+    name: nfs-server
+    state: started
+    enabled: yes
+
+- name: Reload NFS exports
+  ansible.builtin.command: exportfs -ra
+
+- name: Add local repository configuration for Slurm
+  ansible.builtin.template:
+    src: slurm-local-rocky.repo.j2
+    dest: /etc/yum.repos.d/slurm-local.repo
+    mode: '0644'
+
+- name: Remove temporary NFS repo file
+  ansible.builtin.file:
+    path: /etc/yum.repos.d/nfs-local.repo
+    state: absent

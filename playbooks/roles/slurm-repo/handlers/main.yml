@@ -10,8 +10,6 @@
   service:
     name: nfs-kernel-server
     state: restarted
-  when: inventory_hostname == 'localhost'
 
 - name: reload nfs exports
   command: exportfs -ra
-  when: inventory_hostname == 'localhost'
