@@ -1,18 +1,17 @@
 ---
-- name: Check local file exists and configure NFS
+- name: Configure NFS server for local repository
   hosts: localhost
-  tasks:
-    - name: Ensure NFS packages exist
+  gather_facts: true
+  become: true
+  pre_tasks:
+    - name: Ensure NFS deb packages exist
       stat:
-        path: "{{ playbook_dir }}/../setup/scripts/offline_repo"
-      register: local_files
+        path: "{{ playbook_dir }}/roles/slurm-repo/files/nfs-debs-{{ ansible_distribution_release }}"
+      register: nfs_repo_path
 
-    - name: Fail if .deb files are missing      
+    - name: Fail if .deb files are missing
       fail:
-        msg: "NFS packages not found."
-      when: not local_files.stat.exists
-
-- name: Configure NFS
-  hosts: all
+        msg: "NFS .deb packages not found. Please run the download script(./scripts/download-nfs-ubuntu.sh) first."
+      when: not nfs_repo_path.stat.exists
   roles:
     - slurm-repo
