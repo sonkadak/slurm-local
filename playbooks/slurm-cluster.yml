@@ -13,8 +13,25 @@
   roles:
     - hwloc
     - pmix
-    - slurm
     - openmpi
+
+- name: Configure Slurm controller
+  hosts: controller
+  become: true
+  tasks:
+    - name: Run Slurm controller tasks
+      include_role:
+        name: slurm
+        tasks_from: controller.yml
+
+- name: Configure Slurm compute
+  hosts: compute
+  become: true
+  tasks:
+    - name: Run Slurm compute tasks
+      include_role:
+        name: slurm
+        tasks_from: compute.yml
 
 - name: Install enroot
   hosts: compute
@@ -23,7 +40,7 @@
     - nvidia.enroot
 
 - name: Install pyxis
-  hosts: all
+  hosts: compute
   become: true
   roles:
     - pyxis

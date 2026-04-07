@@ -1,0 +1,31 @@
+---
+- name: Install Slurm dependencies
+  include_tasks: install_dependencies.yml
+
+- name: Create build directory for Slurm
+  ansible.builtin.file:
+    path: "{{ slurm_build_dir }}"
+    state: directory
+
+- name: Fetch Slurm source
+  include_tasks: source.yml
+
+- name: Ensure slurm user and group exist if slurm_user is not root
+  when: slurm_user != "root"
+  block:
+    - name: Create slurm group
+      group:
+        name: "{{ slurm_user }}"
+        state: present
+
+    - name: Create slurm user
+      user:
+        name: "{{ slurm_user }}"
+        group: "{{ slurm_user }}"
+        createhome: yes
+        shell: /bin/bash
+        state: present
+
+- name: Register slurm_controller_hostname
+  set_fact:
+    slurm_controller_hostname: "{{ groups['controller'][0] }}"

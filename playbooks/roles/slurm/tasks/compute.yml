@@ -1,0 +1,12 @@
+---
+- name: Prepare common Slurm assets for compute
+  include_tasks: common.yml
+
+- name: Configure Slurm on compute nodes
+  include_tasks: config_gpu_node.yml
+
+- name: Gather compute node information
+  include_tasks: gather_node_info.yml
+
+- name: Set up Slurm compute services
+  include_tasks: setup_compute.yml
