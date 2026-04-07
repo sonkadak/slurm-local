@@ -1,74 +1,8 @@
 ---
-- name: Install Slurm dependencies
-  include_tasks: install_dependencies.yml
-
-- name: Create build directory for Slurm
-  ansible.builtin.file:
-    path: "{{ slurm_build_dir }}"
-    state: directory
-
-- name: Copy Slurm source from NFS if local install
-  copy:
-    src: >-
-      {{
-        (inventory_hostname in groups['nfs-server'])
-        | ternary(repo_path_root, local_repo_mount)
-      }}/source-packages/slurm-{{ slurm_version }}.tar.bz2
-    dest: "{{ slurm_build_dir }}/slurm-{{ slurm_version }}.tar.bz2"
-    remote_src: yes
-  when: local_install | default(false)
-
-- name: Download Slurm source from URL if not local install
-  ansible.builtin.get_url:
-    url: "https://download.schedmd.com/slurm/slurm-{{ slurm_version }}.tar.bz2"
-    dest: "{{ slurm_build_dir }}/slurm-{{ slurm_version }}.tar.bz2"
-  when: not local_install | default(false)
-
-- name: Extract Slurm source
-  ansible.builtin.unarchive:
-    src: "{{ slurm_build_dir }}/slurm-{{ slurm_version }}.tar.bz2"
-    dest: "{{ slurm_build_dir }}"
-    remote_src: yes
-    extra_opts: [--strip-components=1]
-
-- name: Install Slurm on Controller Node
-  include_tasks: config_controller.yml
+- name: Run controller-specific Slurm tasks
+  include_tasks: controller.yml
   when: inventory_hostname in groups['controller']
 
-- name: Install Slurm on GPU Node
-  include_tasks: config_gpu_node.yml
-  when: inventory_hostname in groups['compute']
-
-- name: Gather Node info from GPU Node
-  include_tasks: gather_node_info.yml
-  when: inventory_hostname in groups['compute']
-
-- name: Ensure slurm user and group exist if slurm_user is not root
-  when: slurm_user != "root"
-  block:
-    - name: Create slurm group
-      group:
-        name: "{{ slurm_user }}"
-        state: present
-
-    - name: Create slurm user
-      user:
-        name: "{{ slurm_user }}"
-        group: "{{ slurm_user }}"
-        createhome: yes
-        shell: /bin/bash
-        state: present
-
-- name: Register slurm_controller_hostname
-  set_fact:
-    slurm_controller_hostname: "{{ groups['controller'][0] }}"
-
-- name: Set up Slurm Controller Node
-  include_tasks: setup_controller.yml
-  when: inventory_hostname in groups['controller']
-
-- name: Set up Slurm Compute Node
-  include_tasks: setup_compute.yml
-  vars:
-    is_compute: yes
+- name: Run compute-specific Slurm tasks
+  include_tasks: compute.yml
   when: inventory_hostname in groups['compute']

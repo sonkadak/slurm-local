@@ -1,0 +1,9 @@
+---
+- name: Prepare common Slurm assets for controller
+  include_tasks: common.yml
+
+- name: Configure Slurm on controller nodes
+  include_tasks: config_controller.yml
+
+- name: Set up Slurm controller services
+  include_tasks: setup_controller.yml
